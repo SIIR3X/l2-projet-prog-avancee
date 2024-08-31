@@ -53,13 +53,13 @@ friendship_t * scan_friendship(list_t * Lpers){
 	friendship_t * F = new_friendship();
 	assert(F);
 
-	printf("\n Personne 1 :\n\n");
+	printf("\n Personne 1 (la personne amis avec P2) :\n\n");
 	person_t * tempP = scan_person();
 	person_t * P1 = find(Lpers, tempP, &cmp_person);
 	assert(P1);
 	free_person(&tempP, NULL, NULL);
 
-	printf("\n Personne 2 :\n\n");
+	printf("\n Personne 2 (L'amis de P1):\n\n");
 	tempP = scan_person();
 	person_t * P2 = find(Lpers, tempP, &cmp_person);
 	assert(P2);
@@ -75,37 +75,49 @@ friendship_t * scan_friendship(list_t * Lpers){
 	if (find(P1->friends, P2, &cmp_person) == NULL){
 		cons(P1->friends, P2);
 	}
+
+	/*
+	Contrairement à la version symétrique, on n'ajoute pas la personne 1 à la liste d'amis de la personne 2
+	étant donné qu'on considère qu'une amitié peut ne pas être réciproque.
+
 	if (find(P2->friends, P1, &cmp_person) == NULL){
 		cons(P2->friends, P1);
 	}
+	*/
 
 	return F;
 }
 
 
 /**
- * @brief Libère la mémoire associée à une structure `friendship_t` et, si spécifié, supprime également les personnes impliquées dans l'amitié.
+ * @brief Libère la mémoire associée à une structure `friendship_t` et, si spécifié, supprime également la personne impliquée dans l'amitié.
  *
- * Cette fonction gère la suppression d'une amitié et, en option, la suppression des personnes impliquées dans cette amitié. 
- * Elle retire d'abord les relations d'amitié entre les personnes A et B de leurs listes d'amis respectives, puis, si demandé, 
- * libère les personnes elles-mêmes. La fonction gère aussi la suppression de l'amitié de la liste globale d'amitiés `Lfriends`.
- * Cela permet de s'assurer que toutes les références à l'amitié et aux personnes impliquées sont correctement supprimées et que la mémoire est libérée.
+ * Cette fonction gère la suppression d'une amitié et, en option, la suppression de la personne impliquée dans cette amitié. 
+ * Elle retire d'abord la relation d'amitié entre les personnes A et B de la liste d'amis de A, puis, si demandé, 
+ * libère la personne elle-même. La fonction gère aussi la suppression de l'amitié de la liste globale d'amitiés `Lfriends`.
+ * Cela permet de s'assurer que toutes les références à l'amitié et à la personne impliquée sont correctement supprimées et que la mémoire est libérée.
  *
- * @note Si `del_person` est vrai, les personnes impliquées sont également libérées, et leurs références sont retirées de `Lpers` et `Lfriends`.
+ * @note Si `del_person` est vrai, la personne impliquée est également libérée, et ses références sont retirées de `Lpers` et `Lfriends`.
  *
  * @param ptrFriend Un pointeur vers un pointeur vers la structure `friendship_t` à libérer.
- * @param del_person Un booléen indiquant si les personnes impliquées doivent être supprimées (`true`) ou si seule l'amitié doit être supprimée (`false`).
+ * @param del_person Un booléen indiquant si la personne impliquée doit être supprimée (`true`) ou si seule l'amitié doit être supprimée (`false`).
  * @param Lpers Un pointeur vers la liste de personnes, peut être `NULL` si la liste n'est pas fournie.
  * @param Lfriends Un pointeur vers la liste d'amitiés, peut être `NULL` si la liste n'est pas fournie.
  */
-void free_friendship(friendship_t ** ptrFriend, bool del_persons, list_t * Lpers, list_t * Lfriends){
+void free_friendship(friendship_t ** ptrFriend, bool del_person, list_t * Lpers, list_t * Lfriends){
 	assert(ptrFriend && *ptrFriend);
 
 	// Suppression de la personne B de la liste d'amis de la personne A
 	remove_elm_from_list((*ptrFriend)->A->friends, (*ptrFriend)->B, &cmp_person, NULL);
 
-	// Suppression de la personne A de la liste d'amis de la personne B
+
+	/*
+	Contrairement à la version symétrique, on ne supprime pas la personne A de la liste d'amis de la personne B
+	étant donné qu'une amitié se lit A->B et non B->A (-> pour 'est amis avec').
+
+	Suppression de la personne A de la liste d'amis de la personne B
 	remove_elm_from_list((*ptrFriend)->B->friends, (*ptrFriend)->A, &cmp_person, NULL);
+	*/
 
 	// Si une liste d'amitiés est passée en argument, alors on retire l'amitié de la liste
 	if (Lfriends != NULL){
@@ -113,12 +125,18 @@ void free_friendship(friendship_t ** ptrFriend, bool del_persons, list_t * Lpers
 		remove_elm_from_list(Lfriends, (*ptrFriend), &cmp_friendship, NULL);
 	}
 
-	// Si le booleen del_persons est vrai, alors on supprime les deux personnes
-	if (del_persons == true){
+	// Si le booleen del_person est vrai, alors on supprime les deux personnes
+	if (del_person == true){
 		// Suppression de la personne A
 		free_person(&((*ptrFriend)->A), Lpers, Lfriends);
+
+		/*
+		Contrairement à la version symétrique, si le booleen del_person (et non del_persons) est vrai, on, supprime uniquement la personne A du réseau
+		étant donné qu'on s'intéresse à l'amitié de A vers B uniquement. Supprimer les deux personnes n'est donc pas correct
+
 		// Suppression de la personne B
 		free_person(&((*ptrFriend)->B), Lpers, Lfriends);
+		*/
 	}
 
 	// Libération de la mémoire allouée pour l'amitié elle-même
@@ -128,22 +146,23 @@ void free_friendship(friendship_t ** ptrFriend, bool del_persons, list_t * Lpers
 
 
 /**
- * @brief Compare deux relations d'amitié pour déterminer s'ils représentent la même relation.
+ * @brief Compare deux relations d'amitié pour déterminer s'ils représentent la même relation de manière asymétrique.
  *
- * Cette fonction compare deux relations d'amitié spécifiées pour déterminer si elles représentent la même relation. Elle
- * vérifie si les personnes associées dans les deux relations sont les mêmes, qu'elles soient dans le même ordre ou dans un
- * ordre différent. Si les deux relations représentent la même relation d'amitié, la fonction renvoie 0 ; sinon, elle renvoie 1.
+ * Cette fonction compare deux relations d'amitié spécifiées pour déterminer si elles représentent la même relation de manière
+ * asymétrique. Elle vérifie si les personnes associées dans les deux relations sont les mêmes, mais considère que A->B est différent
+ * de B->A. Si les deux relations représentent la même relation d'amitié de manière asymétrique, la fonction renvoie 0 ; sinon, elle
+ * renvoie -1.
  *
  * @param F1 Un pointeur vers la première structure `friendship_t` à comparer.
  * @param F2 Un pointeur vers la seconde structure `friendship_t` à comparer.
- * @return 0 si les deux relations d'amitié sont identiques, 1 sinon.
+ * @return 0 si les deux relations d'amitié sont identiques de manière asymétrique, 1 sinon.
  */
 int cmp_friendship(friendship_t *F1, friendship_t *F2) {
 	assert(F1 && F2);
 
-	// Comparaison dans les deux sens (symétrique)
-	if ((cmp_person(F1->A, F2->A) == 0 && cmp_person(F1->B, F2->B) == 0) ||
-		(cmp_person(F1->A, F2->B) == 0 && cmp_person(F1->B, F2->A) == 0)) {
+    // Comparaison asymétrique
+	// Ici on retire la comparaison symétrique : cmp_person(F1->A, F2->B) == 0 && cmp_person(F1->B, F2->A)
+	if ((cmp_person(F1->A, F2->A) == 0 && cmp_person(F1->B, F2->B) == 0)) {
 		return 0; // Les amitiés sont identiques
 	}
 
@@ -162,9 +181,8 @@ int cmp_friendship(friendship_t *F1, friendship_t *F2) {
 void print_friendship(friendship_t * F){
 	printf("___________Friendship___________\n");
 	print_person(F->A);
-	printf("\t     ET\n");
+	printf("\tEST AMIS AVEC\n");
 	print_person(F->B);
-	printf("\t SONT AMIS\n");
 	printf("________Friendship ended________\n");
 }
 
@@ -177,9 +195,10 @@ void print_friendship(friendship_t * F){
  * sont lues séquentiellement à partir du flux et converties en structure `friendship_t`. Ces structures sont ensuite ajoutées
  * à une liste d'amitiés (`list_t`).
  *
- * Si l'amitié n'existe pas déjà dans la liste d'amitiés, elle est également ajoutée à la liste d'amitiés (`Lfriends`) ainsi qu'aux listes d'amis 
- * des deux personnes concernées si ces dernières ne sont pas déjà amis. Cela permet de maintenir la cohérence entre les listes d'amis et les amitiés.
- * L'amitié est ajoutée de manière symétrique, ce qui signifie que si A est ami avec B, alors B est aussi ami avec A.
+ * Si l'amitié n'existe pas déjà dans la liste d'amitiés, elle est également ajoutée à la liste d'amitiés (`Lfriends`).
+ * Cela permet de maintenir la cohérence entre les listes d'amis et les amitiés. Contrairement à la version symétrique,
+ * l'amitié n'est pas ajoutée de manière réciproque. Cela signifie que si A est ami avec B, cela ne signifie pas nécessairement
+ * que B est ami avec A.
  *
  * @param stream Un pointeur vers le flux depuis lequel lire les informations de l'amitié.
  * @param mode Le mode du flux (TEXT pour texte, BIN pour binaire).
@@ -242,9 +261,16 @@ friendship_t * stream_2_friendship(FILE * stream, stream_mode_t mode, list_t * L
 		if (find(P1->friends, P2, &cmp_person) == NULL){
 			cons(P1->friends, P2);
 		}
+
+		/*
+		Contrairement à la version symétrique, on n'ajoute pas la personne 1 à la liste d'amis de la personne 2
+		étant donné qu'on considère qu'une amitié peut ne pas être réciproque.
+
 		if (find(P2->friends, P1, &cmp_person) == NULL){
 			cons(P2->friends, P1);
 		}
+		*/
+
 		cons(Lfriends, F);
 	}
 	// Si elle existe déjà, alors on supprime l'amitié que l'on vient de créer et on renvoie simplement l'amitié déjà existante (pratique pour éviter des pertes de mémoire).

@@ -3,11 +3,11 @@
 
 
 ## Notre dépôt
-Le dépôt du projet (**version symétrique**) est disponible via ce lien [GitLab](https://gitlab.univ-lorraine.fr/fagioli7u/pne_projet). Une **version asymétrique** est également disponible dans la branche [asym](https://gitlab.univ-lorraine.fr/fagioli7u/pne_projet/tree/asym) du dépot.
+Le dépôt du projet (**version symétrique**) est disponible via ce lien [GitLab](https://gitlab.univ-lorraine.fr/fagioli7u/pne_projet). Une **version asymétrique** est également disponible dans la branche [asym](https://gitlab.univ-lorraine.fr/fagioli7u/pne_projet/tree/asym) du dépôt.
 
 
 ## Documentation
-La documentation complète du projet (**version symétrique**) est disponible via ce [lien](https://siix.fr/pne_projet/sym/) (documentation générée avec Doxygen) à l'aide des identifiants suivants :  
+La documentation complète du projet (**version asymétrique**) est disponible via ce [lien](https://siix.fr/pne_projet/asym/) (documentation générée avec Doxygen) à l'aide des identifiants suivants :  
 
     Username : ufr
     Password : SX5837ufr
@@ -15,12 +15,26 @@ La documentation complète du projet (**version symétrique**) est disponible vi
 
 ## Description du projet
 Le projet a pour objectif de simuler le fonctionnement d'un réseau social. Il est composé de différentes fonctions permettant d'ajouter, de supprimer et d'afficher des personnes et des amitiés. 
-Dans cette version du projet, on s'intéresse à la simulation d'amitiés **symétriques**. On considère donc qu'une amitié allant de A vers B **va aussi** de B vers A.  
+Dans cette version du projet, on s'intéresse à la simulation d'amitiés **asymétriques**. On considère donc qu'une amitié allant de A vers B **ne vas pas** de de B vers A.  
 
 **Attention**, au cours de l'exécution du programme, il sera demandé à l'utilisateur de saisir des données (chemin vers un fichier, date de naissance, etc...). Ces données doivent être saisies en respectant les conventions affichées à l'écran.
 A noter que lorsque le programme demande de saisir un chemin vers un fichier, on parle évidemment du chemin relatif vers le fichier (Exemple : **data/person.dta** pour la liste des personnes).
 
 Le projet peut être lancé à l'aide de la commande **'make'** dans un environnement **Linux**. Le makefile s'occupe automatiquement du chargement des fichiers 'person.dta' et 'friendship.dta' ainsi que de les convertir en une structure 'graph_t'. À noter que le programme peut également être lancé manuellement à partir de l'exécutable. Le premier argument du programme correspond à un fichier contenant une liste de personnes, et le deuxième correspond à un fichier contenant une liste d'amitiés.
+
+
+## Différences entre la version asymétrique et symétrique
+
+Cette section est dédiée à l'explication des **différences** entre la version **symétrique** et **asymétrique**. La majorité du projet est la même que la version symétrique, seules 7 fonctions ont été modifiées. Toutes les modifications apportées ont été commentées dans les fichiers.
+
+Voici une rapide explication des différentes modifications apportées :  
+
+- **fscanf_graph :** La fonction de lecture d'un graphe n'ajoute plus l'amitié symétrique dans la matrice d'adjacence.
+- **list_2_graph :** La fonction de conversion d'une liste en un graphe n'ajoute plus l'amitié symétrique dans la matrice d'adjacence.
+- **cmp_friendship :** La fonction de comparaison d'amitié considère maintenant que l'amitié A->B est différente de l'amitié B->A.
+- **free_friendship :** La fonction de suppression d'amitiés ne supprime plus l'amitié symétrique. De plus, si le booléen 'del_person' est vrai, elle ne supprime que la personne A.
+- **free_person :** La fonction de suppression de personnes cherche maintenant l'amitié symétrique dans la liste d'amitiés pour la supprimer, puisque `free_friendship` ne supprime plus l'amitié symétrique (cf `free_friendship`).
+- **stream_2_friendship :** La fonction de lecture d'amitiés depuis un fichier n'ajoute plus l'amitié symétrique dans les listes d'amis.
 
 
 ## Menu du projet
@@ -179,7 +193,7 @@ Les paramètres **list_t * Lpers** et **list_t * Lfriends** ont donc été ajout
 
 Les deux fonctions font appel à `remove_elm_from_list`, qui permet de supprimer un élément de liste en mettant à jour les successeurs et prédécesseurs des voisins de l'élément à supprimer.  
 
-Pour finir, on notera que `free_person` s'occupe dans tous les cas de supprimer toutes les relations d'amitiés dans lesquelles la personne en question était impliquée. La fonction `free_friendship`, quant à elle, a deux possibilités de fonctionnement. Si le booléen 'del_person' est vrai, alors la fonction supprime les personnes du réseau à l'aide de `free_person`, en plus de supprimer la relation de base. Sinon, elle gère uniquement la suppression de la personne A de la liste d'amis de la personne B, et vice versa.
+Pour finir, on notera que `free_person` s'occupe dans tous les cas de supprimer toutes les relations d'amitiés dans lesquelles la personne en question était impliquée. La fonction `free_friendship`, quant à elle, a deux possibilités de fonctionnement. Si le booléen 'del_person' est vrai, alors la fonction supprime les personnes du réseau à l'aide de `free_person`, en plus de supprimer la relation de base. Sinon, elle gère uniquement la suppression de la personne A de la liste d'amis de la personne B.
 
 - **Fonction `list_2_graph`**
 

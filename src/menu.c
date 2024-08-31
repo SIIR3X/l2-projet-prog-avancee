@@ -415,7 +415,7 @@ void matrix_menu(list_t * Lpers, list_t * Lfriends, graph_t ** Graph){
 
 			// 4. Calculer les cliques maximales
 			case 4:
-				// On vérifie si le graphe est symétrique pour appliquer l'algorithme de BronKerbosh (Normalement impossible dans cette version)
+				// On vérifie si le graphe est symétrique pour appliquer l'algorithme de BronKerbosh (Possible dans cette version)
 				if (symetric_graph(*Graph) == true){
 					printf("\tNuméro de sommet\n\n");
 					vertice_id = scan_choice(-1, (*Graph)->num_vertices-1);

@@ -68,14 +68,14 @@ void del_graph(graph_t ** ptrG) {
 
 
 /**
- * @brief Lit les données d'un graphe depuis un fichier en utilisant fscanf avec symétrie.
+ * @brief Lit les données d'un graphe depuis un fichier en utilisant fscanf sans symétrie.
  *
  * Cette fonction lit les données d'un graphe depuis un fichier spécifié en utilisant la fonction fscanf.
  * Le graphe est créé avec le nombre de sommets (nb_vertices) récupéré depuis le fichier. Ensuite, les
- * liaisons entre les sommets sont lues et enregistrées dans la matrice d'adjacence du graphe. Cela inclut
- * l'ajout de la symétrie pour refléter les connexions bidirectionnelles entre les sommets. La fonction
- * retourne un pointeur vers la structure de graphe `graph_t` créée ou NULL en cas d'erreur de lecture ou
- * d'allocation mémoire.
+ * liaisons entre les sommets sont lues et enregistrées dans la matrice d'adjacence du graphe. Contrairement
+ * à la version symétrique, cette version ne prend pas en compte la symétrie, donc les connexions entre les
+ * sommets ne sont pas reflétées de manière bidirectionnelle. La fonction retourne un pointeur vers la
+ * structure de graphe `graph_t` créée ou NULL en cas d'erreur de lecture ou d'allocation mémoire.
  *
  * @param filename Le nom du fichier à partir duquel lire les données du graphe.
  * @param mode Le mode du fichier (TEXT pour texte, BIN pour binaire).
@@ -132,7 +132,9 @@ graph_t * fscanf_graph(const char * filename, const stream_mode_t mode) {
 
 			if (i != j) {
 				G->adjacencies[i * nb_vertices + j] = BUDDY;
-				G->adjacencies[j * nb_vertices + i] = BUDDY; // Ajout de la symétrie
+
+				// Contrairement à la version symétrique, on n'ajoute pas la symétrie dans la matrice 
+				// G->adjacencies[j * nb_vertices + i] = BUDDY; Ajout de la symétrie
 			}
 		}
 	}

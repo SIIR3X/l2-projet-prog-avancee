@@ -64,12 +64,14 @@ person_t * scan_person() {
 
 
 /**
- * @brief Libère la mémoire associée à une structure `person_t` et supprime les relations d'amitié de la personne.
+ * @brief Libère la mémoire associée à une structure `person_t` et supprime les relations d'amitié de la personne de manière symétrique.
  *
  * Cette fonction libère la mémoire associée à une structure `person_t` pointée par `ptrP`. Elle gère également la suppression
  * des relations d'amitié de la personne, en parcourant et en supprimant les amitiés de la liste globale d'amitiés `Lfriends`.
  * Si la personne est présente dans la liste de personnes `Lpers`, elle est également retirée de cette liste. La fonction est conçue
  * pour gérer correctement les cas où `Lpers` et/ou `Lfriends` sont NULL, permettant ainsi une flexibilité dans son utilisation.
+ * Lorsqu'une amitié est supprimée, la suppression est effectuée de manière symétrique, c'est-à-dire que si A est ami avec B, alors B est aussi
+ * ami avec A, et les deux amitiés sont supprimées.
  *
  * @param ptrP Un pointeur vers un pointeur de la structure `person_t` à libérer.
  * @param Lpers Un pointeur vers la liste des personnes, (peut être NULL).
@@ -87,6 +89,12 @@ void free_person(person_t ** ptrP, list_t * Lpers, list_t * Lfriends) {
 		tempF->A = (*ptrP);
 		tempF->B = get_data(get_head((*ptrP)->friends));
 
+		// On crée également l'amitié symétrique étant donné que 'free_friendship' ne libère plus que l'amitié allant de A vers B
+		// Or si on supprime une personne, il faut également supprimer l'amitié allant de B vers A si elle existe
+		friendship_t * tempF_symetric = new_friendship();
+		tempF_symetric->A = tempF->B;
+		tempF_symetric->B = (*ptrP);
+
 		// Si une liste d'amitiés est passé en argument
 		if (Lfriends != NULL){
 			// On recherche l'amitié dans la liste des amitiés 
@@ -97,10 +105,20 @@ void free_person(person_t ** ptrP, list_t * Lpers, list_t * Lfriends) {
 				free_friendship(&existingFriendship, false, Lpers, Lfriends);
 			}
 
+			// On recherche l'amitié symétrique dans la liste des amitiés 
+			friendship_t * existing_Symetric_Friendship = find(Lfriends, tempF_symetric, &cmp_friendship);
+
+			// Si jamais l'amitié symétrique existe, alors on la supprime
+			if (existing_Symetric_Friendship != NULL){
+				free_friendship(&existing_Symetric_Friendship, false, Lpers, Lfriends);
+			}
+
 			free(tempF);
+			free(tempF_symetric);
 		}
 		else{
 			free_friendship(&tempF, false, Lpers, NULL);
+			free_friendship(&tempF_symetric, false, Lpers, NULL);
 		}
 	}
 

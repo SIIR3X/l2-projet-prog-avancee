@@ -380,12 +380,13 @@ void remove_elm_from_list(list_t * L, void * target, int (*cmp_ptrf)(), void (*d
 
 
 /**
- * @brief Convertit une liste de personnes en une matrice d'adjacence avec symétrie.
+ * @brief Convertit une liste de personnes en une matrice d'adjacence asymétrique.
  *
  * Cette fonction prend une liste de personnes `Lpers` et la convertit en une matrice d'adjacence `G`. Chaque personne
  * dans la liste correspond à un sommet dans la matrice, et les amitiés entre les personnes sont représentées par
  * des valeurs non nulles dans la matrice. La fonction parcourt la liste des personnes et leurs amis pour créer les
- * valeurs non nulles dans la matrice d'adjacence, en ajoutant également la symétrie pour refléter les amitiés mutuelles.
+ * valeurs non nulles dans la matrice d'adjacence. Contrairement à la version symétrique, cette version n'ajoute pas la
+ * symétrie pour refléter les amitiés mutuelles dans la matrice.
  * Ensuite, elle calcule les distances entre les sommets de la matrice.
  *
  * @param Lpers Un pointeur vers la liste de personnes.
@@ -410,7 +411,9 @@ graph_t * list_2_graph(list_t * Lpers) {
 			if (friend_index != -1) {
 				// Ajoute une valeur non nulle dans la matrice d'adjacence
 				G->adjacencies[i * G->num_vertices + friend_index] = 1;
-				G->adjacencies[friend_index * G->num_vertices + i] = 1; // Ajout de la symétrie
+				
+				// Contrairement à la version symétrique, on n'ajoute pas la symétrie dans la matrice
+				// G->adjacencies[friend_index * G->num_vertices + i] = 1; Ajout de la symétrie
 			}
 		}
 	}
